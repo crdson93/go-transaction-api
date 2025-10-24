@@ -2,12 +2,17 @@ FROM golang
 
 WORKDIR /app
 
-COPY go.mod ./
+COPY go.mod .
+
 RUN go mod tidy
 
-COPY . .
+COPY *.go .
 
-RUN go build -o server .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /opt/transaction-api
+
+FROM alpine:latest
+
+COPY --from=builder /opt/transaction-api /opt/transaction-api
 
 EXPOSE 8080
-CMD ["./server"]
+ENTRYPOINT [ "/opt/transaction-api" ]
